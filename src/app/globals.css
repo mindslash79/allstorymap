@@ -1,3 +1,34 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes loginBackgroundZoom {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes loginContentFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-background-cinematic {
+  animation: loginBackgroundZoom 18s ease-out forwards;
+  transform-origin: center;
+}
+
+.login-content-fade {
+  animation: loginContentFade 800ms ease-out both;
+}
