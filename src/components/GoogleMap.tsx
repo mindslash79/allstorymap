@@ -1,24 +1,32 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { GoogleMap as GMap, LoadScript, Marker } from "@react-google-maps/api";
+import { GoogleMap as GMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { supabase } from "@/lib/supabaseClient";
 import type { PinRow } from "@/types/pin";
 import PinCreateModal from "@/components/PinCreateModal";
 
-const containerStyle = { width: "100%", height: "100%" };
 const DEFAULT_CENTER = { lat: 43.6532, lng: -79.3832 }; // Toronto
-
-
+const DRAWER_WIDTH = 340;
+const GOOGLE_LIBRARIES: "places"[] = ["places"];
 
 type LatLng = { lat: number; lng: number };
 
 export default function GoogleMap() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: apiKey ?? "",
+    libraries: GOOGLE_LIBRARIES,
+  });
+
   const [searchText, setSearchText] = useState("");
-  const [auto, setAuto] = useState<google.maps.places.Autocomplete | null>(null);
+  const [isPinsPanelOpen, setIsPinsPanelOpen] = useState(true);
 
   const mapRef = useRef<google.maps.Map | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const autocompleteListenerRef = useRef<google.maps.MapsEventListener | null>(null);
 
   const [userId, setUserId] = useState<string | null>(null);
   const [pins, setPins] = useState<PinRow[]>([]);
@@ -43,48 +51,22 @@ export default function GoogleMap() {
     m.setZoom(zoom);
   };
 
-  const handlePlaceChanged = () => {
-    if (!auto || !mapRef.current) return;
-
-    const place = auto.getPlace();
-    const geometry = place.geometry;
-
-    if (!geometry) return;
-
-    // 1) viewport가 있으면 fitBounds (가장 정확)
-    if (geometry.viewport) {
-      mapRef.current.fitBounds(geometry.viewport);
-    } else if (geometry.location) {
-      // 2) location만 있으면 panTo + zoom
-      const pos = { lat: geometry.location.lat(), lng: geometry.location.lng() };
-      mapRef.current.panTo(pos);
-      mapRef.current.setZoom(16);
-    }
-
-    // tempPin도 같이 세팅해서 바로 핀 만들기 가능하게
-    if (geometry.location) {
-      setTempPin({ lat: geometry.location.lat(), lng: geometry.location.lng() });
-      setCreateOpen(true);
-    }
-  };
-
-
   useEffect(() => {
     let alive = true;
 
-    const load = async () => {
+    const loadUser = async () => {
       try {
         const { data: userData } = await supabase.auth.getUser();
-        const uid = userData?.user?.id ?? null;
         if (!alive) return;
-        setUserId(uid);
+        setUserId(userData?.user?.id ?? null);
       } catch {
         if (!alive) return;
         setUserId(null);
       }
     };
 
-    load();
+    loadUser();
+
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserId(session?.user?.id ?? null);
     });
@@ -100,16 +82,20 @@ export default function GoogleMap() {
 
     const fetchPins = async () => {
       setLoadingPins(true);
+
       try {
-        // 로그인 필수 정책이면, 로그인 없으면 fetch 안함
         const { data: userData, error: userErr } = await supabase.auth.getUser();
         if (userErr) throw userErr;
         if (!userData.user) throw new Error("Not logged in");
 
-        const { data, error } = await supabase.from("pins").select("*").order("created_at", { ascending: false });
-        if (error) throw error;
+        const { data, error } = await supabase
+          .from("pins")
+          .select("*")
+          .order("created_at", { ascending: false });
 
+        if (error) throw error;
         if (!alive) return;
+
         setPins((data ?? []) as PinRow[]);
       } catch (e) {
         console.error("Failed to load pins:", e);
@@ -119,90 +105,80 @@ export default function GoogleMap() {
     };
 
     fetchPins();
+
     return () => {
       alive = false;
     };
   }, []);
 
-  if (!apiKey) return <div>Missing Google Maps API key</div>;
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!inputRef.current) return;
+    if (autocompleteRef.current) return;
+    if (!window.google?.maps?.places) return;
+
+    const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
+      fields: ["geometry", "name", "formatted_address"],
+    });
+
+    autocompleteRef.current = autocomplete;
+
+    autocompleteListenerRef.current = autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      const geometry = place.geometry;
+
+      if (!mapRef.current || !geometry) return;
+
+      if (geometry.viewport) {
+        mapRef.current.fitBounds(geometry.viewport);
+      } else if (geometry.location) {
+        const pos = {
+          lat: geometry.location.lat(),
+          lng: geometry.location.lng(),
+        };
+        mapRef.current.panTo(pos);
+        mapRef.current.setZoom(16);
+      }
+
+      if (geometry.location) {
+        setTempPin({
+          lat: geometry.location.lat(),
+          lng: geometry.location.lng(),
+        });
+        setCreateOpen(true);
+      }
+    });
+
+    return () => {
+      autocompleteListenerRef.current?.remove();
+      autocompleteListenerRef.current = null;
+      autocompleteRef.current = null;
+    };
+  }, [isLoaded]);
+
+  if (!apiKey) {
+    return <div>Missing Google Maps API key</div>;
+  }
+
+  if (loadError) {
+    return <div>Failed to load Google Maps</div>;
+  }
 
   return (
-    <div style={{ display: "flex", height: "calc(100vh - 0px)" }}>
-      {/* MAP */}
-      <div style={{ flex: 1, position: "relative" }}>
-        <LoadScript googleMapsApiKey={apiKey} libraries={["places"]}>
-          <div
-            style={{
-              position: "absolute",
-              top: 12,
-              left: 12,
-              zIndex: 5,
-              width: 320,
-              background: "white",
-              border: "1px solid #e5e5e5",
-              borderRadius: 12,
-              padding: 10,
-              boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
-            }}
-          >
-            {/* Autocomplete input */}
-            <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Search</div>
-
-            {/* @react-google-maps/api Autocomplete 없이도 되는 순수 방식:
-                여기서는 구글의 Autocomplete 객체를 input에 직접 바인딩 */}
-            <input
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Search a place..."
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid #ddd",
-                outline: "none",
-                fontSize: 14,
-              }}
-              ref={(el) => {
-                if (!el) return;
-                if (auto) return; // 이미 바인딩 되었으면 중복 방지
-
-                // google maps places autocomplete attach
-                const a = new google.maps.places.Autocomplete(el, {
-                  fields: ["geometry", "name", "formatted_address"],
-                });
-
-                a.addListener("place_changed", () => {
-                  setAuto(a);
-                  // setAuto는 async 느낌이라, 즉시 처리 위해 직접 a로 처리
-                  const place = a.getPlace();
-                  const geometry = place.geometry;
-
-                  if (!mapRef.current || !geometry) return;
-
-                  if (geometry.viewport) {
-                    mapRef.current.fitBounds(geometry.viewport);
-                  } else if (geometry.location) {
-                    const pos = { lat: geometry.location.lat(), lng: geometry.location.lng() };
-                    mapRef.current.panTo(pos);
-                    mapRef.current.setZoom(16);
-                  }
-
-                  if (geometry.location) {
-                    setTempPin({ lat: geometry.location.lat(), lng: geometry.location.lng() });
-                    setCreateOpen(true);
-                  }
-                });
-
-                setAuto(a);
-              }}
-            />
-          </div>
-
+    <div className="relative isolate h-[calc(100vh-72px)] w-full overflow-hidden bg-white">
+     {/* MAP BASE LAYER */}
+      <div className="relative z-0 h-full w-full">
+        {isLoaded ? (
           <GMap
-            mapContainerStyle={containerStyle}
+            mapContainerStyle={{ width: "100%", height: "100%" }}
             center={DEFAULT_CENTER}
             zoom={12}
-            onLoad={(map) => void (mapRef.current = map)}
+            onLoad={(map) => {
+              mapRef.current = map;
+            }}
+            onUnmount={() => {
+              mapRef.current = null;
+            }}
             onClick={(e) => {
               if (!e.latLng) return;
               setTempPin({ lat: e.latLng.lat(), lng: e.latLng.lng() });
@@ -228,190 +204,249 @@ export default function GoogleMap() {
 
             {tempPin && <Marker position={tempPin} />}
           </GMap>
-        </LoadScript>
-
-        {/* CREATE */}
-        {createOpen && tempPin && (
-          <PinCreateModal
-            open={createOpen}
-            mode="create"
-            lat={tempPin.lat}
-            lng={tempPin.lng}
-            onClose={() => {
-              setCreateOpen(false);
-              setTempPin(null);
-            }}
-            onSave={async (payload) => {
-              if (!userId) throw new Error("Not logged in");
-
-              // legacy compatibility (optional)
-              const time_text = `${payload.time_from_text ?? ""} ~ ${payload.is_current ? "Current" : payload.time_to_text ?? ""}`.trim();
-              const time_key = payload.time_from_key ? String(payload.time_from_key) : null;
-
-              const insertRow = {
-                user_id: userId,
-                lat: payload.lat,
-                lng: payload.lng,
-                note: payload.note,
-                visibility: payload.visibility,
-
-                time_from_key: payload.time_from_key,
-                time_to_key: payload.time_to_key,
-                time_from_text: payload.time_from_text,
-                time_to_text: payload.time_to_text,
-                time_precision: payload.time_precision,
-                is_current: payload.is_current,
-
-                // legacy if columns exist
-                time_text,
-                time_key,
-              };
-
-              const { data, error } = await supabase.from("pins").insert(insertRow).select("*").single();
-              if (error) throw error;
-
-              const newPin = data as PinRow;
-
-              setPins((prev) => [newPin, ...prev]);
-              setSelectedPinId(String(newPin.id));
-              flyTo({ lat: Number(newPin.lat), lng: Number(newPin.lng) }, 15);
-
-              setCreateOpen(false);
-              setTempPin(null);
-            }}
-          />
-        )}
-
-        {/* EDIT */}
-        {editingPin && (
-          <PinCreateModal
-            open={true}
-            mode="edit"
-            initialPin={editingPin}
-            onClose={() => setEditingPin(null)}
-            onSave={async (payload) => {
-              if (!userId) throw new Error("Not logged in");
-
-              const patch = {
-                // lat/lng edit는 일단 허용 안함 (원하면 가능)
-                note: payload.note,
-                visibility: payload.visibility,
-
-                time_from_key: payload.time_from_key,
-                time_to_key: payload.time_to_key,
-                time_from_text: payload.time_from_text,
-                time_to_text: payload.time_to_text,
-                time_precision: payload.time_precision,
-                is_current: payload.is_current,
-
-                // legacy
-                time_text: `${payload.time_from_text ?? ""} ~ ${payload.is_current ? "Current" : payload.time_to_text ?? ""}`.trim(),
-                time_key: payload.time_from_key ? String(payload.time_from_key) : null,
-              };
-
-              const { data, error } = await supabase.from("pins").update(patch).eq("id", editingPin.id).select("*").single();
-              if (error) throw error;
-
-              const updated = data as PinRow;
-              setPins((prev) => prev.map((p) => (String(p.id) === String(updated.id) ? updated : p)));
-              setEditingPin(null);
-            }}
-          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-zinc-500">
+            Loading map...
+          </div>
         )}
       </div>
 
-      {/* RIGHT LIST */}
-      <div style={{ width: 380, borderLeft: "1px solid #e5e5e5", background: "white", padding: 12, overflow: "auto" }}>
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
-          <h3 style={{ margin: 0 }}>My Pins</h3>
-          <div style={{ fontSize: 12, color: "#666" }}>{loadingPins ? "loading..." : `${pins.length} items`}</div>
-        </div>
+      {/* SEARCH OVERLAY */}
+      <div className="fixed left-3 top-[84px] z-[900] w-80 rounded-xl border border-zinc-200 bg-white p-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.15)]">
+        <div className="mb-1.5 text-xs font-bold">Search</div>
 
-        <div style={{ marginTop: 8, fontSize: 12, color: "#666" }}>
-          signed-in: {userId ? "✅ yes" : "❌ no (should redirect / block by page guard)"}
-        </div>
+        <input
+          ref={inputRef}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="Search a place..."
+          className="w-full rounded-[10px] border border-zinc-300 px-3 py-2.5 text-sm outline-none"
+        />
+      </div>
 
-        {loadingPins ? (
-          <div style={{ marginTop: 12, color: "#666" }}>Loading...</div>
-        ) : pins.length === 0 ? (
-          <div style={{ marginTop: 12, color: "#666" }}>아직 핀이 없어. 지도에서 클릭해서 만들어봐.</div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
-            {pins.map((p) => {
-              const isSelected = selectedPinId && String(p.id) === String(selectedPinId);
-
-              const timeLine =
-                p.time_from_text && (p.is_current || p.time_to_text)
-                  ? `${p.time_from_text} ~ ${p.is_current ? "Current" : p.time_to_text}`
-                  : p.time_text ?? "(no time)";
-
-              const preview = (p.note ?? "").toString().slice(0, 140);
-
-              return (
-                <button
-                  key={String(p.id)}
-                  onClick={() => {
-                    setSelectedPinId(String(p.id));
-                    flyTo({ lat: Number(p.lat), lng: Number(p.lng) }, 15);
-                  }}
-                  style={{
-                    textAlign: "left",
-                    padding: 12,
-                    borderRadius: 12,
-                    border: "1px solid #ddd",
-                    background: isSelected ? "#f5f5f5" : "white",
-                    cursor: "pointer",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                    <div style={{ fontSize: 12, color: "#666" }}>{timeLine}</div>
-                    <div style={{ fontSize: 11, color: "#999" }}>ID: {p.id}</div>
-                  </div>
-
-                  <div style={{ fontSize: 14, whiteSpace: "pre-wrap", lineHeight: 1.35, marginTop: 6 }}>
-                    {preview || "(empty)"}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Selected controls */}
-        {selectedPin && (
-          <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #eee" }}>
-            <div style={{ fontSize: 12, color: "#666" }}>Selected ID: {selectedPin.id}</div>
-
-            <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-              <button
-                onClick={() => setEditingPin(selectedPin)}
-                style={{ border: "1px solid #111", background: "#111", color: "white", borderRadius: 12, padding: "10px 12px", cursor: "pointer" }}
-              >
-                Edit
-              </button>
-
-              <button
-                onClick={async () => {
-                  const ok = confirm(`Delete pin ${selectedPin.id}?`);
-                  if (!ok) return;
-
-                  const { error } = await supabase.from("pins").delete().eq("id", selectedPin.id);
-                  if (error) {
-                    alert(error.message);
-                    return;
-                  }
-
-                  setPins((prev) => prev.filter((p) => String(p.id) !== String(selectedPin.id)));
-                  setSelectedPinId(null);
-                }}
-                style={{ border: "1px solid #ddd", background: "white", borderRadius: 12, padding: "10px 12px", cursor: "pointer" }}
-              >
-                Delete
-              </button>
+      {/* MY PINS DRAWER */}
+      <aside
+        className={`fixed top-[72px] right-0 bottom-0 z-[1000] border-l border-zinc-200 bg-white p-3 shadow-2xl transition-transform duration-300 ease-out ${
+          isPinsPanelOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+        style={{
+          width: DRAWER_WIDTH,
+              right: 0,
+              left: "auto",
+          maxWidth: "calc(100vw - 2rem)",
+        }}
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="m-0 text-xl font-semibold">My Pins</h3>
+            <div className="text-xs text-zinc-500">
+              {loadingPins ? "loading..." : `${pins.length} items`}
             </div>
           </div>
-        )}
-      </div>
+
+          <div className="mt-2 text-xs text-zinc-500">
+            signed-in: {userId ? "yes" : "no (should redirect / block by page guard)"}
+          </div>
+
+          {loadingPins ? (
+            <div className="mt-3 text-zinc-500">Loading...</div>
+          ) : pins.length === 0 ? (
+            <div className="mt-3 text-zinc-500">No pins yet. Click the map to create one.</div>
+          ) : (
+            <div className="mt-3 flex-1 overflow-auto pb-6">
+              <div className="flex flex-col gap-2.5">
+                {pins.map((p) => {
+                  const isSelected = String(p.id) === String(selectedPinId);
+
+                  const timeLine =
+                    p.time_from_text && (p.is_current || p.time_to_text)
+                      ? `${p.time_from_text} ~ ${p.is_current ? "Current" : p.time_to_text}`
+                      : p.time_text ?? "(no time)";
+
+                  const preview = (p.note ?? "").toString().slice(0, 140);
+
+                  return (
+                    <button
+                      key={String(p.id)}
+                      onClick={() => {
+                        setSelectedPinId(String(p.id));
+                        flyTo({ lat: Number(p.lat), lng: Number(p.lng) }, 15);
+                      }}
+                      className={`rounded-xl border p-3 text-left transition ${
+                        isSelected
+                          ? "border-zinc-300 bg-zinc-100"
+                          : "border-zinc-200 bg-white hover:bg-zinc-50"
+                      }`}
+                    >
+                      <div className="flex justify-between gap-2.5">
+                        <div className="text-xs text-zinc-500">{timeLine}</div>
+                        <div className="text-[11px] text-zinc-400">ID: {p.id}</div>
+                      </div>
+
+                      <div className="mt-1.5 whitespace-pre-wrap text-sm leading-[1.35]">
+                        {preview || "(empty)"}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {selectedPin && (
+            <div className="mt-3.5 border-t border-zinc-200 pt-3">
+              <div className="text-xs text-zinc-500">Selected ID: {selectedPin.id}</div>
+
+              <div className="mt-2.5 flex gap-2.5">
+                <button
+                  onClick={() => setEditingPin(selectedPin)}
+                  className="cursor-pointer rounded-xl border border-zinc-900 bg-zinc-900 px-3 py-2 text-white"
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={async () => {
+                    const ok = confirm(`Delete pin ${selectedPin.id}?`);
+                    if (!ok) return;
+
+                    const { error } = await supabase.from("pins").delete().eq("id", selectedPin.id);
+                    if (error) {
+                      alert(error.message);
+                      return;
+                    }
+
+                    setPins((prev) => prev.filter((p) => String(p.id) !== String(selectedPin.id)));
+                    setSelectedPinId(null);
+                  }}
+                  className="cursor-pointer rounded-xl border border-zinc-300 bg-white px-3 py-2"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* TOGGLE BUTTON */}
+      <button
+        type="button"
+        aria-label={isPinsPanelOpen ? "Close My Pins panel" : "Open My Pins panel"}
+        aria-expanded={isPinsPanelOpen}
+        onClick={() => setIsPinsPanelOpen((prev) => !prev)}
+        className="fixed top-1/2 z-[1010] flex h-14 w-10 -translate-y-1/2 items-center justify-center rounded-l-2xl rounded-r-md border border-zinc-200 bg-white text-zinc-700 shadow-lg transition-[right] duration-300 ease-out"
+        style={{
+          right: isPinsPanelOpen ? DRAWER_WIDTH : 12,
+        }}
+      >
+        <span className="text-lg leading-none">{isPinsPanelOpen ? ">" : "<"}</span>
+      </button>
+
+      {/* CREATE MODAL */}
+      {createOpen && tempPin && (
+        <PinCreateModal
+          open={createOpen}
+          mode="create"
+          lat={tempPin.lat}
+          lng={tempPin.lng}
+          onClose={() => {
+            setCreateOpen(false);
+            setTempPin(null);
+          }}
+          onSave={async (payload) => {
+            if (!userId) throw new Error("Not logged in");
+
+            const time_text = `${payload.time_from_text ?? ""} ~ ${
+              payload.is_current ? "Current" : payload.time_to_text ?? ""
+            }`.trim();
+
+            const time_key = payload.time_from_key ? String(payload.time_from_key) : null;
+
+            const insertRow = {
+              user_id: userId,
+              lat: payload.lat,
+              lng: payload.lng,
+              note: payload.note,
+              visibility: payload.visibility,
+
+              time_from_key: payload.time_from_key,
+              time_to_key: payload.time_to_key,
+              time_from_text: payload.time_from_text,
+              time_to_text: payload.time_to_text,
+              time_precision: payload.time_precision,
+              is_current: payload.is_current,
+
+              time_text,
+              time_key,
+            };
+
+            const { data, error } = await supabase
+              .from("pins")
+              .insert(insertRow)
+              .select("*")
+              .single();
+
+            if (error) throw error;
+
+            const newPin = data as PinRow;
+
+            setPins((prev) => [newPin, ...prev]);
+            setSelectedPinId(String(newPin.id));
+            flyTo({ lat: Number(newPin.lat), lng: Number(newPin.lng) }, 15);
+
+            setCreateOpen(false);
+            setTempPin(null);
+          }}
+        />
+      )}
+
+      {/* EDIT MODAL */}
+      {editingPin && (
+        <PinCreateModal
+          open={true}
+          mode="edit"
+          initialPin={editingPin}
+          onClose={() => setEditingPin(null)}
+          onSave={async (payload) => {
+            if (!userId) throw new Error("Not logged in");
+
+            const patch = {
+              note: payload.note,
+              visibility: payload.visibility,
+
+              time_from_key: payload.time_from_key,
+              time_to_key: payload.time_to_key,
+              time_from_text: payload.time_from_text,
+              time_to_text: payload.time_to_text,
+              time_precision: payload.time_precision,
+              is_current: payload.is_current,
+
+              time_text: `${payload.time_from_text ?? ""} ~ ${
+                payload.is_current ? "Current" : payload.time_to_text ?? ""
+              }`.trim(),
+              time_key: payload.time_from_key ? String(payload.time_from_key) : null,
+            };
+
+            const { data, error } = await supabase
+              .from("pins")
+              .update(patch)
+              .eq("id", editingPin.id)
+              .select("*")
+              .single();
+
+            if (error) throw error;
+
+            const updated = data as PinRow;
+
+            setPins((prev) =>
+              prev.map((p) => (String(p.id) === String(updated.id) ? updated : p))
+            );
+
+            setEditingPin(null);
+          }}
+        />
+      )}
     </div>
   );
 }
