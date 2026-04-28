@@ -165,9 +165,29 @@ export default function GoogleMap() {
   }
 
   return (
-    <div className="relative isolate h-[calc(100vh-72px)] w-full overflow-hidden bg-white">
+   <div
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      paddingTop: 72, // 핵심
+      overflow: "hidden",
+      background: "white",
+  }}
+>
+
      {/* MAP BASE LAYER */}
-      <div className="relative z-0 h-full w-full">
+      <div
+  style={{
+    position: "relative",
+    zIndex: 0,
+    height: "100%",
+    width: "100%",
+    overflow: "hidden",
+  }}
+>
         {isLoaded ? (
           <GMap
             mapContainerStyle={{ width: "100%", height: "100%" }}
@@ -226,35 +246,69 @@ export default function GoogleMap() {
 
       {/* MY PINS DRAWER */}
       <aside
-        className={`fixed top-[72px] right-0 bottom-0 z-[1000] border-l border-zinc-200 bg-white p-3 shadow-2xl transition-transform duration-300 ease-out ${
-          isPinsPanelOpen ? "translate-x-0" : "translate-x-full"
-        }`}
         style={{
+          position: "fixed",
+          top: 72,
+          right: isPinsPanelOpen ? 0 : -DRAWER_WIDTH,
+          bottom: 0,
           width: DRAWER_WIDTH,
-              right: 0,
-              left: "auto",
           maxWidth: "calc(100vw - 2rem)",
+          zIndex: 1000,
+          background: "white",
+          borderLeft: "1px solid #e5e7eb",
+          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+          padding: 12,
+          transition: "right 300ms ease-out",
+          overflow: "hidden",
+          boxSizing: "border-box",
         }}
       >
-        <div className="flex h-full flex-col">
-          <div className="flex items-baseline justify-between gap-3">
-            <h3 className="m-0 text-xl font-semibold">My Pins</h3>
-            <div className="text-xs text-zinc-500">
-              {loadingPins ? "loading..." : `${pins.length} items`}
+        <div
+          style={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
+          <div style={{ flexShrink: 0 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>My Pins</h3>
+
+              <div style={{ fontSize: 12, color: "#71717a" }}>
+                {loadingPins ? "loading..." : `${pins.length} items`}
+              </div>
+            </div>
+
+            <div style={{ marginTop: 8, fontSize: 12, color: "#71717a" }}>
+              signed-in: {userId ? "yes" : "no (should redirect / block by page guard)"}
             </div>
           </div>
 
-          <div className="mt-2 text-xs text-zinc-500">
-            signed-in: {userId ? "yes" : "no (should redirect / block by page guard)"}
-          </div>
-
-          {loadingPins ? (
-            <div className="mt-3 text-zinc-500">Loading...</div>
-          ) : pins.length === 0 ? (
-            <div className="mt-3 text-zinc-500">No pins yet. Click the map to create one.</div>
-          ) : (
-            <div className="mt-3 flex-1 overflow-auto pb-6">
-              <div className="flex flex-col gap-2.5">
+          <div
+            style={{
+              marginTop: 12,
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              overflowX: "hidden",
+              paddingRight: 4,
+              paddingBottom: 24,
+            }}
+          >
+            {loadingPins ? (
+              <div style={{ color: "#71717a" }}>Loading...</div>
+            ) : pins.length === 0 ? (
+              <div style={{ color: "#71717a" }}>No pins yet. Click the map to create one.</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {pins.map((p) => {
                   const isSelected = String(p.id) === String(selectedPinId);
 
@@ -272,76 +326,100 @@ export default function GoogleMap() {
                         setSelectedPinId(String(p.id));
                         flyTo({ lat: Number(p.lat), lng: Number(p.lng) }, 15);
                       }}
-                      className={`rounded-xl border p-3 text-left transition ${
-                        isSelected
-                          ? "border-zinc-300 bg-zinc-100"
-                          : "border-zinc-200 bg-white hover:bg-zinc-50"
-                      }`}
+                      style={{
+                        width: "100%",
+                        border: isSelected ? "1px solid #d4d4d8" : "1px solid #e5e7eb",
+                        background: isSelected ? "#f4f4f5" : "white",
+                        borderRadius: 12,
+                        padding: 12,
+                        textAlign: "left",
+                        cursor: "pointer",
+                      }}
                     >
-                      <div className="flex justify-between gap-2.5">
-                        <div className="text-xs text-zinc-500">{timeLine}</div>
-                        <div className="text-[11px] text-zinc-400">ID: {p.id}</div>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 10,
+                        }}
+                      >
+                        <div style={{ fontSize: 12, color: "#71717a" }}>{timeLine}</div>
+                        <div style={{ fontSize: 11, color: "#a1a1aa" }}>ID: {p.id}</div>
                       </div>
 
-                      <div className="mt-1.5 whitespace-pre-wrap text-sm leading-[1.35]">
+                      <div
+                        style={{
+                          marginTop: 6,
+                          whiteSpace: "pre-wrap",
+                          fontSize: 14,
+                          lineHeight: 1.35,
+                        }}
+                      >
                         {preview || "(empty)"}
                       </div>
                     </button>
                   );
                 })}
               </div>
-            </div>
-          )}
+            )}
 
-          {selectedPin && (
-            <div className="mt-3.5 border-t border-zinc-200 pt-3">
-              <div className="text-xs text-zinc-500">Selected ID: {selectedPin.id}</div>
+            {selectedPin && (
+              <div
+                style={{
+                  marginTop: 14,
+                  borderTop: "1px solid #e5e7eb",
+                  paddingTop: 12,
+                }}
+              >
+                <div style={{ fontSize: 12, color: "#71717a" }}>
+                  Selected ID: {selectedPin.id}
+                </div>
 
-              <div className="mt-2.5 flex gap-2.5">
-                <button
-                  onClick={() => setEditingPin(selectedPin)}
-                  className="cursor-pointer rounded-xl border border-zinc-900 bg-zinc-900 px-3 py-2 text-white"
-                >
-                  Edit
-                </button>
+                <div style={{ marginTop: 10, display: "flex", gap: 10 }}>
+                  <button
+                    onClick={() => setEditingPin(selectedPin)}
+                    style={{
+                      cursor: "pointer",
+                      borderRadius: 12,
+                      border: "1px solid #18181b",
+                      background: "#18181b",
+                      color: "white",
+                      padding: "8px 12px",
+                    }}
+                  >
+                    Edit
+                  </button>
 
-                <button
-                  onClick={async () => {
-                    const ok = confirm(`Delete pin ${selectedPin.id}?`);
-                    if (!ok) return;
+                  <button
+                    onClick={async () => {
+                      const ok = confirm(`Delete pin ${selectedPin.id}?`);
+                      if (!ok) return;
 
-                    const { error } = await supabase.from("pins").delete().eq("id", selectedPin.id);
-                    if (error) {
-                      alert(error.message);
-                      return;
-                    }
+                      const { error } = await supabase.from("pins").delete().eq("id", selectedPin.id);
+                      if (error) {
+                        alert(error.message);
+                        return;
+                      }
 
-                    setPins((prev) => prev.filter((p) => String(p.id) !== String(selectedPin.id)));
-                    setSelectedPinId(null);
-                  }}
-                  className="cursor-pointer rounded-xl border border-zinc-300 bg-white px-3 py-2"
-                >
-                  Delete
-                </button>
+                      setPins((prev) => prev.filter((p) => String(p.id) !== String(selectedPin.id)));
+                      setSelectedPinId(null);
+                    }}
+                    style={{
+                      cursor: "pointer",
+                      borderRadius: 12,
+                      border: "1px solid #d4d4d8",
+                      background: "white",
+                      padding: "8px 12px",
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </aside>
-
-      {/* TOGGLE BUTTON */}
-      <button
-        type="button"
-        aria-label={isPinsPanelOpen ? "Close My Pins panel" : "Open My Pins panel"}
-        aria-expanded={isPinsPanelOpen}
-        onClick={() => setIsPinsPanelOpen((prev) => !prev)}
-        className="fixed top-1/2 z-[1010] flex h-14 w-10 -translate-y-1/2 items-center justify-center rounded-l-2xl rounded-r-md border border-zinc-200 bg-white text-zinc-700 shadow-lg transition-[right] duration-300 ease-out"
-        style={{
-          right: isPinsPanelOpen ? DRAWER_WIDTH : 12,
-        }}
-      >
-        <span className="text-lg leading-none">{isPinsPanelOpen ? ">" : "<"}</span>
-      </button>
 
       {/* CREATE MODAL */}
       {createOpen && tempPin && (
