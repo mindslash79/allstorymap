@@ -1,4 +1,4 @@
-/* 1 STORY MAKER — Online Runtime v3
+/* 1 STORY MAKER — Online Runtime v4
  * No secrets in this file. GEMINI_API_KEY stays in Apps Script Properties.
  */
 const SM=Object.freeze({
@@ -49,7 +49,7 @@ function smPing_(){
 function smEnsureRemoteTrigger_(){
   try{
     const exists=ScriptApp.getProjectTriggers().some(function(t){
-      return t.getHandlerFunction()==='runStoryMakerOnline_' && String(t.getEventType())==='CLOCK';
+      return t.getHandlerFunction()==='runStoryMakerOnline_'&&String(t.getEventType())==='CLOCK';
     });
     if(!exists) ScriptApp.newTrigger('runStoryMakerOnline_').timeBased().everyMinutes(1).create();
     smSetControl_('Automation State','LIVE · ONLINE RUNTIME · REMOTE QUEUE');
@@ -94,7 +94,7 @@ function smBuildAll(){
 
 function smPendingInputs_(){
   return smRows_('INPUT').filter(function(r){
-    return String(r.RAW_INPUT||'').trim() && r.PROCESSED!==true && String(r.PROCESSED).toUpperCase()!=='TRUE';
+    return String(r.RAW_INPUT||'').trim()&&r.PROCESSED!==true&&String(r.PROCESSED).toUpperCase()!=='TRUE';
   });
 }
 
@@ -103,6 +103,10 @@ function smDevelopStory(){
   if(!inputs.length) throw new Error('INPUT에 처리되지 않은 RAW_INPUT이 없습니다.');
   const prompt=[
     'You are the narrative architect for an RPG Maker MV game. Return ONLY valid JSON.',
+    'Creator inputs are the highest-authority source for explicit hard facts.',
+    'Hard facts include identity, names, relationships, ages, life/death status, cause of death, dates, chronology, ownership, and major backstory events.',
+    'If creator input does NOT establish a hard fact such as cause of death, do not casually invent a specific value unless it is genuinely needed. If you add such a detail, keep it globally consistent across story and character bibles.',
+    'Never contradict an explicit creator fact.',
     'Creator inputs:',JSON.stringify(inputs),
     'Existing context:',JSON.stringify(smContext_(['STORY','PAYLOAD','AUDIENCE','CHARACTERS'])),
     'Creator value/payload is primary overall, approximately 60:40 versus audience adaptation, but never force that ratio scene by scene.',
@@ -137,21 +141,21 @@ function smReviewPayload(){
 }
 
 function smBuildStructure(){
-  const prompt=['Expand the story into narrative blocks BEFORE scenes. Return ONLY JSON.','Context:',JSON.stringify(smContext_(['STORY','PAYLOAD','AUDIENCE','CHARACTERS'])),'Divide BEGINNING/MIDDLE/ENDING naturally. Important locations must emerge here.','Schema: {"structure":[{"structure_id":"STRUCT_001","parent_id":"","act":"BEGINNING|MIDDLE|ENDING","section_name":"","order_in_act":1,"summary":"","story_function":"","payload_function":"","major_event":"","conflict":"","character_changes":"","important_location_ids":"LOC_001","location_needs":"","target_length":""}]}'].join('\n');
+  const prompt=['Expand the story into narrative blocks BEFORE scenes. Return ONLY JSON.','Context:',JSON.stringify(smContext_(['STORY','PAYLOAD','AUDIENCE','CHARACTERS'])),'Divide BEGINNING/MIDDLE/ENDING naturally. Important locations must emerge here. Do not introduce hard facts that contradict STORY or CHARACTERS.','Schema: {"structure":[{"structure_id":"STRUCT_001","parent_id":"","act":"BEGINNING|MIDDLE|ENDING","section_name":"","order_in_act":1,"summary":"","story_function":"","payload_function":"","major_event":"","conflict":"","character_changes":"","important_location_ids":"LOC_001","location_needs":"","target_length":""}]}'].join('\n');
   const out=smGemini_(prompt,'BUILD_STRUCTURE');
   smReplace_('STRUCTURE',(out.structure||[]).map(function(x,i){return {STRUCTURE_ID:x.structure_id||('STRUCT_'+smPad_(i+1,3)),PARENT_ID:x.parent_id||'',ACT:smAct_(x.act),SECTION_NAME:x.section_name||'',ORDER_IN_ACT:x.order_in_act||i+1,SUMMARY:x.summary||'',STORY_FUNCTION:x.story_function||'',PAYLOAD_FUNCTION:x.payload_function||'',MAJOR_EVENT:x.major_event||'',CONFLICT:x.conflict||'',CHARACTER_CHANGES:x.character_changes||'',IMPORTANT_LOCATION_IDS:x.important_location_ids||'',LOCATION_NEEDS:x.location_needs||'',TARGET_LENGTH:x.target_length||'',STATUS:'APPROVED',JSON_REF:''};}));
   return (out.structure||[]).length;
 }
 
 function smBuildLocations(){
-  const prompt=['Create narrative locations required by the story, BEFORE scenes. Return ONLY JSON.','Context:',JSON.stringify(smContext_(['STORY','PAYLOAD','CHARACTERS','STRUCTURE'])),'LOCATION_ID is narrative location, not RPG Maker Map ID. Capture changing meaning across story. Levels MUST be LOW, MEDIUM, or HIGH.','Schema: {"locations":[{"location_id":"LOC_001","name":"","parent_location_id":"","location_type":"","story_role":"","payload_role":"","meaning_beginning":"","meaning_middle":"","meaning_end":"","atmosphere":"","time_variants":"","weather_variants":"","important_objects":"","required_subareas":"","access_relationships":"","characters_associated":"","map_size_hint":"","exploration_level":"MEDIUM","privacy_level":"MEDIUM"}]}'].join('\n');
+  const prompt=['Create narrative locations required by the story, BEFORE scenes. Return ONLY JSON.','Context:',JSON.stringify(smContext_(['STORY','PAYLOAD','CHARACTERS','STRUCTURE'])),'LOCATION_ID is narrative location, not RPG Maker Map ID. Capture changing meaning across story. Do not introduce contradictory hard facts. Levels MUST be LOW, MEDIUM, or HIGH.','Schema: {"locations":[{"location_id":"LOC_001","name":"","parent_location_id":"","location_type":"","story_role":"","payload_role":"","meaning_beginning":"","meaning_middle":"","meaning_end":"","atmosphere":"","time_variants":"","weather_variants":"","important_objects":"","required_subareas":"","access_relationships":"","characters_associated":"","map_size_hint":"","exploration_level":"MEDIUM","privacy_level":"MEDIUM"}]}'].join('\n');
   const out=smGemini_(prompt,'BUILD_LOCATIONS'),v=Number(smControl_('Story Version')||1);
   smReplace_('LOCATIONS',(out.locations||[]).map(function(x,i){return {LOCATION_ID:x.location_id||('LOC_'+smPad_(i+1,3)),NAME:x.name||'',PARENT_LOCATION_ID:x.parent_location_id||'',LOCATION_TYPE:x.location_type||'',STORY_ROLE:x.story_role||'',PAYLOAD_ROLE:x.payload_role||'',MEANING_BEGINNING:x.meaning_beginning||'',MEANING_MIDDLE:x.meaning_middle||'',MEANING_END:x.meaning_end||'',ATMOSPHERE:x.atmosphere||'',TIME_VARIANTS:x.time_variants||'',WEATHER_VARIANTS:x.weather_variants||'',IMPORTANT_OBJECTS:x.important_objects||'',REQUIRED_SUBAREAS:x.required_subareas||'',ACCESS_RELATIONSHIPS:x.access_relationships||'',CHARACTERS_ASSOCIATED:x.characters_associated||'',MAP_SIZE_HINT:x.map_size_hint||'',EXPLORATION_LEVEL:smLevel_(x.exploration_level),PRIVACY_LEVEL:smLevel_(x.privacy_level),STATUS:'APPROVED',VERSION:v,JSON_REF:''};}));
   return (out.locations||[]).length;
 }
 
 function smGenerateScenes(){
-  const prompt=['Create final scene dataset. Return ONLY JSON.','Context:',JSON.stringify(smContext_(['STORY','PAYLOAD','AUDIENCE','CHARACTERS','STRUCTURE','LOCATIONS'])),'Every scene MUST use an existing LOCATION_ID. Separate chronology_order from presentation_order. Record character state changes.','Schema: {"scenes":[{"scene_id":"SCENE_001","structure_id":"STRUCT_001","chronology_order":1,"presentation_order":1,"title":"","summary":"","story_function":"","payload_function":"","payload_importance":0.8,"location_id":"LOC_001","location_area":"","time":"","weather":"","atmosphere":"","characters":"CHAR_001","entry_state_ref":"STATE_001_BEFORE","character_changes":"","exit_state_ref":"STATE_001_AFTER","experience_profile_id":"EXP_001","setup":"","payoff":"","required_objects":"","required_assets":"","music_mood":"","npc_needs":"","transition_in":"","transition_out":""}],"character_states":[{"state_id":"STATE_001","scene_id":"SCENE_001","character_id":"CHAR_001","before_state":"","change":"","after_state":"","trust":"","openness":"","fear":"","goal":"","belief":"","relationship_changes":"","emotional_state":"","change_reason":""}]}'].join('\n');
+  const prompt=['Create final scene dataset. Return ONLY JSON.','Context:',JSON.stringify(smContext_(['STORY','PAYLOAD','AUDIENCE','CHARACTERS','STRUCTURE','LOCATIONS'])),'Every scene MUST use an existing LOCATION_ID. Separate chronology_order from presentation_order. Record character state changes. Do not contradict canonical hard facts already established.','Schema: {"scenes":[{"scene_id":"SCENE_001","structure_id":"STRUCT_001","chronology_order":1,"presentation_order":1,"title":"","summary":"","story_function":"","payload_function":"","payload_importance":0.8,"location_id":"LOC_001","location_area":"","time":"","weather":"","atmosphere":"","characters":"CHAR_001","entry_state_ref":"STATE_001_BEFORE","character_changes":"","exit_state_ref":"STATE_001_AFTER","experience_profile_id":"EXP_001","setup":"","payoff":"","required_objects":"","required_assets":"","music_mood":"","npc_needs":"","transition_in":"","transition_out":""}],"character_states":[{"state_id":"STATE_001","scene_id":"SCENE_001","character_id":"CHAR_001","before_state":"","change":"","after_state":"","trust":"","openness":"","fear":"","goal":"","belief":"","relationship_changes":"","emotional_state":"","change_reason":""}]}'].join('\n');
   const out=smGemini_(prompt,'GENERATE_SCENES'),v=Number(smControl_('Story Version')||1);
   const scenes=(out.scenes||[]).map(function(x,i){return {SCENE_ID:x.scene_id||('SCENE_'+smPad_(i+1,3)),STRUCTURE_ID:x.structure_id||'',CHRONOLOGY_ORDER:smNum_(x.chronology_order,i+1,0,9999),PRESENTATION_ORDER:smNum_(x.presentation_order,i+1,0,9999),TITLE:x.title||'',SUMMARY:x.summary||'',STORY_FUNCTION:x.story_function||'',PAYLOAD_FUNCTION:x.payload_function||'',PAYLOAD_IMPORTANCE:smNum_(x.payload_importance,0.5,0,1),LOCATION_ID:x.location_id||'',LOCATION_AREA:x.location_area||'',TIME:x.time||'',WEATHER:x.weather||'',ATMOSPHERE:x.atmosphere||'',CHARACTERS:x.characters||'',ENTRY_STATE_REF:x.entry_state_ref||'',CHARACTER_CHANGES:x.character_changes||'',EXIT_STATE_REF:x.exit_state_ref||'',EXPERIENCE_PROFILE_ID:x.experience_profile_id||('EXP_'+smPad_(i+1,3)),SETUP:x.setup||'',PAYOFF:x.payoff||'',REQUIRED_OBJECTS:x.required_objects||'',REQUIRED_ASSETS:x.required_assets||'',MUSIC_MOOD:x.music_mood||'',NPC_NEEDS:x.npc_needs||'',TRANSITION_IN:x.transition_in||'',TRANSITION_OUT:x.transition_out||'',STATUS:'APPROVED',VERSION:v,JSON_REF:''};});
   smReplace_('SCENES',scenes);
@@ -175,7 +179,20 @@ function smValidateStory(){
   sc.forEach(function(x){if(!x.LOCATION_ID||!lids.has(String(x.LOCATION_ID)))issues.push(smIssue_('SCENE',x.SCENE_ID,'LOCATION_REFERENCE','FAIL','HIGH','Scene references missing LOCATION_ID.',String(x.LOCATION_ID||''),'Assign existing LOCATION_ID.',false));});
   ex.forEach(function(x){const total=Number(x.EMOTION||0)+Number(x.CURIOSITY||0)+Number(x.HUMOR||0)+Number(x.STIMULATION||0)+Number(x.WARMTH||0)+Number(x.STRATEGY||0)+Number(x.ACHIEVEMENT||0)+Number(x.OTHER_1_SCORE||0);if(Math.abs(total-10)>0.001)issues.push(smIssue_('EXPERIENCE',x.SCENE_ID,'EXPERIENCE_TOTAL','FAIL','MEDIUM','Experience scores must total 10.','Total='+total,'Rebalance to 10.',true));if(!sids.has(String(x.SCENE_ID||'')))issues.push(smIssue_('EXPERIENCE',x.SCENE_ID,'SCENE_REFERENCE','FAIL','HIGH','Experience references missing scene.','','Assign existing SCENE_ID.',false));});
   st.forEach(function(x){if(!sids.has(String(x.SCENE_ID||'')))issues.push(smIssue_('CHARACTER_STATE',x.SCENE_ID,'SCENE_REFERENCE','FAIL','HIGH','Character state references missing scene.','','Assign existing SCENE_ID.',false));});
-  const prompt=['Strict narrative QA. Return ONLY JSON.','Context:',JSON.stringify(smContext_(['STORY','PAYLOAD','AUDIENCE','CHARACTERS','STRUCTURE','LOCATIONS','SCENES','EXPERIENCE','CHARACTER_STATE'])),'Check story logic, character continuity, timeline, location continuity, setup/payoff, redundancy, motivation, payload alignment, audience fit.','Schema: {"checks":[{"scope":"STORY|SCENE|CHARACTER|LOCATION|EXPERIENCE","target_id":"","check_type":"","result":"PASS|WARN|FAIL","score":0,"severity":"INFO|LOW|MEDIUM|HIGH|CRITICAL","issue":"","evidence":"","suggested_fix":"","auto_fix_allowed":false,"payload_impact":"","audience_impact":""}]}'].join('\n');
+  const context=smContext_(['INPUT','STORY','PAYLOAD','AUDIENCE','CHARACTERS','STRUCTURE','LOCATIONS','SCENES','EXPERIENCE','CHARACTER_STATE']);
+  const prompt=[
+    'You are a strict narrative continuity and canonical-fact QA system. Return ONLY JSON.',
+    'Authority order: (1) explicit creator INPUT, (2) approved STORY/PAYLOAD, (3) CHARACTERS, then downstream STRUCTURE/LOCATIONS/SCENES/STATE.',
+    'First extract hard facts from every dataset, then cross-check them before judging story quality.',
+    'Hard facts include names, identity, family/relationship, age, life/death status, cause of death, dates, elapsed years, event order, ownership, locations, and major backstory events.',
+    'If the same hard fact has incompatible values in two places, you MUST emit FACT_CONTRADICTION with result FAIL and severity HIGH or CRITICAL. Quote both conflicting pieces in evidence.',
+    'If downstream content contradicts explicit creator INPUT, it is always FAIL even if the narrative otherwise feels coherent.',
+    'If a high-impact hard fact was not specified by creator input, an invented detail may be allowed only if it stays globally consistent. If multiple incompatible invented versions appear, FAIL.',
+    'Do not return an overall PASS merely because emotional arc and payload are good when factual contradictions exist.',
+    'Also check character continuity, timeline arithmetic, location continuity, setup/payoff, redundancy, motivation, payload alignment, audience fit, first/last scene bounds, and chronology versus presentation order.',
+    'Context:',JSON.stringify(context),
+    'Schema: {"checks":[{"scope":"STORY|SCENE|CHARACTER|LOCATION|EXPERIENCE","target_id":"","check_type":"FACT_CONTRADICTION|CANONICAL_INPUT_CONFLICT|TIMELINE|CONTINUITY|SETUP_PAYOFF|PAYLOAD_ALIGNMENT|AUDIENCE_FIT|METADATA_COMPLETENESS|OTHER","result":"PASS|WARN|FAIL","score":0,"severity":"INFO|LOW|MEDIUM|HIGH|CRITICAL","issue":"","evidence":"","suggested_fix":"","auto_fix_allowed":false,"payload_impact":"","audience_impact":""}]}'
+  ].join('\n');
   const ai=smGemini_(prompt,'VALIDATE_STORY');
   (ai.checks||[]).forEach(function(c){issues.push({scope:c.scope||'STORY',target_id:c.target_id||'',check_type:c.check_type||'AI_REVIEW',result:smResult_(c.result),score:c.score==null?'':c.score,severity:smSeverity_(c.severity),issue:c.issue||'',evidence:c.evidence||'',suggested_fix:c.suggested_fix||'',auto_fix_allowed:!!c.auto_fix_allowed,payload_impact:c.payload_impact||'',audience_impact:c.audience_impact||''});});
   if(!issues.length)issues.push(smIssue_('STORY','','BASELINE','PASS','INFO','No blocking issues detected.','','',false));
@@ -196,7 +213,7 @@ function smExportToMap(){const s=smSheet_('FINAL'),h=smHeaders_(s),c=h.indexOf('
 
 function smSaveVersion(){
   const id='V_'+Utilities.formatDate(new Date(),Session.getScriptTimeZone(),'yyyyMMdd_HHmmss');
-  smAppend_('VERSIONS',[{VERSION_ID:id,CREATED_AT:new Date(),PROJECT_ID:smControl_('Project ID')||'GAME_001',STORY_VERSION:smControl_('Story Version')||0,PAYLOAD_VERSION:smControl_('Payload Version')||0,AUDIENCE_VERSION:smControl_('Audience Version')||0,CHARACTERS_VERSION:smRows_('CHARACTERS').length,STRUCTURE_VERSION:smRows_('STRUCTURE').length,LOCATIONS_VERSION:smRows_('LOCATIONS').length,SCENES_VERSION:smRows_('SCENES').length,EXPERIENCE_VERSION:smRows_('EXPERIENCE').length,VALIDATION_RUN_ID:'',GIT_COMMIT:'',SUPABASE_SNAPSHOT_ID:'',BUILD_ID:'',STATUS:'SNAPSHOT',NOTES:'Online runtime v3 snapshot',JSON_MANIFEST_REF:''}]);return id;
+  smAppend_('VERSIONS',[{VERSION_ID:id,CREATED_AT:new Date(),PROJECT_ID:smControl_('Project ID')||'GAME_001',STORY_VERSION:smControl_('Story Version')||0,PAYLOAD_VERSION:smControl_('Payload Version')||0,AUDIENCE_VERSION:smControl_('Audience Version')||0,CHARACTERS_VERSION:smRows_('CHARACTERS').length,STRUCTURE_VERSION:smRows_('STRUCTURE').length,LOCATIONS_VERSION:smRows_('LOCATIONS').length,SCENES_VERSION:smRows_('SCENES').length,EXPERIENCE_VERSION:smRows_('EXPERIENCE').length,VALIDATION_RUN_ID:'',GIT_COMMIT:'',SUPABASE_SNAPSHOT_ID:'',BUILD_ID:'',STATUS:'SNAPSHOT',NOTES:'Online runtime v4 snapshot',JSON_MANIFEST_REF:''}]);return id;
 }
 
 function smGemini_(prompt,label){
