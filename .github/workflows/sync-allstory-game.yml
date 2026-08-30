@@ -42,3 +42,5 @@ jobs:
           git add public/game
           git commit -m "Sync latest Allstory RPG Maker web game"
           git push
+
+# Asset-repair sync trigger: 2026-08-30
