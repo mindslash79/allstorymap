@@ -1,0 +1,44 @@
+name: Sync Allstory RPG Maker game
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sync-allstory-game.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-game:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy latest Allstory web game into public/game
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 \
+            https://github.com/mindslash79/allstorykor/archive/refs/heads/main.tar.gz \
+            -o /tmp/allstorykor.tar.gz
+          rm -rf /tmp/allstorykor-main
+          tar -xzf /tmp/allstorykor.tar.gz -C /tmp
+          rm -rf public/game
+          mkdir -p public/game
+          cp -R /tmp/allstorykor-main/. public/game/
+          rm -rf public/game/.github
+
+      - name: Commit synced game
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain public/game)" ]; then
+            echo "Game is already current."
+            exit 0
+          fi
+          git config user.name "allstory-game-sync"
+          git config user.email "actions@users.noreply.github.com"
+          git add public/game
+          git commit -m "Sync latest Allstory RPG Maker web game"
+          git push
