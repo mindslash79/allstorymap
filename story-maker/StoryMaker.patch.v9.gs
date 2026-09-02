@@ -40,7 +40,7 @@ function smCreateEditableMaster_(){
   smAppendExportCover_(body,projectId,projectName,version,'Editable Story Master');
   body.appendParagraph('EDITING WORKFLOW').setHeading(DocumentApp.ParagraphHeading.HEADING1).setForegroundColor('#16324F');
   body.appendParagraph('Edit only the Value column. You may add any amount of text to an existing value. Keep the Field names and gray STORYMAKER markers unchanged. After editing, open Story Maker and run SYNC_MASTER_AND_REBUILD. The system compares your edits with the saved baseline, applies changes, runs validation, and regenerates all deliverables.');
-  var sheetUrl='https://docs.google.com/spreadsheets/d/'+SM.SPREADSHEET_ID+'/edit#gid=346817733';
+  var sheetUrl='https://docs.google.com/spreadsheets/d/'+SM.SPREADSHEET_ID+'/edit#gid=0&range=E26';
   body.appendParagraph('Open Story Maker — Sync & Rebuild').setLinkUrl(sheetUrl).setBold(true).setForegroundColor('#1A73E8');
   body.appendHorizontalRule();
 
