@@ -148,8 +148,15 @@ function smStyleSyncHeader_(sheet,count){
 }
 
 function smClearBaselineForDoc_(docId){
-  var sh=smSs_().getSheetByName('DOC_SYNC_BASELINE');
-  for(var r=sh.getLastRow();r>=2;r--)if(String(sh.getRange(r,1).getValue())===docId)sh.deleteRow(r);
+  var sh=smSs_().getSheetByName('DOC_SYNC_BASELINE'),last=sh.getLastRow();
+  if(last<2)return;
+  var values=sh.getRange(2,1,last-1,1).getValues(),runs=[],end=null,start=null;
+  for(var i=values.length-1;i>=0;i--){
+    if(String(values[i][0])===docId){if(end===null)end=i+2;start=i+2;}
+    else if(end!==null){runs.push([start,end]);start=null;end=null;}
+  }
+  if(end!==null)runs.push([start,end]);
+  runs.forEach(function(run){sh.deleteRows(run[0],run[1]-run[0]+1);});
 }
 
 function smAppendBaseline_(docId,sheet,row,field,value){
