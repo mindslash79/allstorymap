@@ -5,7 +5,7 @@
 const STORY_MAKER_V7_BASE_COMMIT='d2a005daec8acc1590dd5160df69c7cbbbd72094';
 const STORY_MAKER_V7_PATCH_COMMIT='583183da9fd6bfe2e69d6d2ab99744a7c76a22b0';
 const STORY_MAKER_V8_PATCH_COMMIT='2bb8d8107a58c2e67e8195030f4a03de5c11d576';
-const STORY_MAKER_V9_PATCH_COMMIT='26cd609afd68ec22866feecefba994d927eee720';
+const STORY_MAKER_V9_PATCH_COMMIT='e65d80caab9daa70c7fecabda3ce3be19693b4bd';
 const STORY_MAKER_V7_BASE='https://raw.githubusercontent.com/mindslash79/allstorymap/'+STORY_MAKER_V7_BASE_COMMIT+'/story-maker/StoryMaker.v4.base.gs';
 const STORY_MAKER_V7_PATCH5='https://raw.githubusercontent.com/mindslash79/allstorymap/'+STORY_MAKER_V7_BASE_COMMIT+'/story-maker/StoryMaker.patch.v5.gs';
 const STORY_MAKER_V7_PATCH6='https://raw.githubusercontent.com/mindslash79/allstorymap/'+STORY_MAKER_V7_BASE_COMMIT+'/story-maker/StoryMaker.patch.v6.gs';
