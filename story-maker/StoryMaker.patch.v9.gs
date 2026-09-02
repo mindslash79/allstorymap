@@ -135,6 +135,7 @@ function smEnsureSyncSheets_(){
     base.getRange(1,1,1,7).setValues([['DOC_ID','SHEET','ROW','FIELD','BASE_VALUE','UPDATED_AT','KEY']]);
     smStyleSyncHeader_(base,7);
   }
+  base.getRange('E:E').setNumberFormat('@');
   if(!audit){
     audit=ss.insertSheet('DOC_SYNC_AUDIT');
     audit.getRange(1,1,1,10).setValues([['SYNC_ID','SYNCED_AT','DOC_ID','TYPE','SHEET','ROW','FIELD','BEFORE_OR_BASELINE','AFTER_OR_DOC','DETAIL']]);
@@ -158,12 +159,13 @@ function smAppendBaseline_(docId,sheet,row,field,value){
 function smWriteBaselineRows_(rows){
   if(!rows.length)return;
   var sh=smSs_().getSheetByName('DOC_SYNC_BASELINE');
+  sh.getRange(sh.getLastRow()+1,5,rows.length,1).setNumberFormat('@');
   sh.getRange(sh.getLastRow()+1,1,rows.length,7).setValues(rows);
 }
 
 function smBaselineMap_(docId){
   var rows=smRows_('DOC_SYNC_BASELINE'),map={};
-  rows.forEach(function(x){if(String(x.DOC_ID)===docId)map[[x.SHEET,x.ROW,x.FIELD].join('|')]=String(x.BASE_VALUE===undefined?'':x.BASE_VALUE);});
+  rows.forEach(function(x){if(String(x.DOC_ID)===docId)map[[x.SHEET,x.ROW,x.FIELD].join('|')]=smExportValue_(x.BASE_VALUE);});
   return map;
 }
 
