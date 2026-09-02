@@ -115,10 +115,17 @@ function smSyncEditableMaster_(rebuild){
   }
   smWriteSyncAudit_(docId,changes,conflicts);
   var exportResult='';
-  if(rebuild){smBuildAll();exportResult=smExportArtifactGroups_(smExportGroupOrder_());}
-  var summary=changes.length+' fields applied; '+conflicts.length+' conflicts logged'+(rebuild?'; validation and exports rebuilt':'');
+  if(rebuild){smScheduleStoryMakerContinuation_('storyMakerContinueBuild');exportResult='BUILD_AND_EXPORT_QUEUED';}
+  var summary=changes.length+' fields applied; '+conflicts.length+' conflicts logged'+(rebuild?'; build, validation, and exports queued':'');
   smSetControlIfPresent_('Last Sync Result',summary);
   return JSON.stringify({doc_id:docId,changes:changes.length,conflicts:conflicts.length,rebuild:rebuild,export_result:exportResult});
+}
+
+function smScheduleStoryMakerContinuation_(handler){
+  ScriptApp.getProjectTriggers().forEach(function(t){
+    if(t.getHandlerFunction()===handler)ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger(handler).timeBased().after(1000).create();
 }
 
 function smEnsureSyncSheets_(){
