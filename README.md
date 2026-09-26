@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Allstory Map
 
-## Getting Started
+Allstory map/platform and creative tooling repository.
 
-First, run the development server:
+## Role
+This repository owns:
+- Allstory map/platform application work
+- map-related web UI and Supabase integration
+- **canonical Story Maker ownership**
+
+The root app is a Next.js project. Story Maker tooling lives under `story-maker/`.
+
+## Story Maker boundary
+Story Maker belongs conceptually to this repository because it designs narrative structure, locations, scenes, experience flow, and handoff data for downstream map/game construction.
+
+A transitional deployment/runtime copy currently exists in:
+
+`mindslash79/rpg-character-factory/apps-script-deploy/StoryMaker.gs`
+
+That copy currently shares the RPG Character Factory Apps Script deployment environment. It must not be deleted until deployment coupling is safely separated.
+
+New Story Maker design direction should be treated as owned here, not by RPG Character Factory.
+
+See:
+- `story-maker/README.md`
+- `CURRENT.md`
+
+## Development
+Typical Next.js commands:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Do not infer Story Maker ownership from where an Apps Script deployment copy happens to live.
