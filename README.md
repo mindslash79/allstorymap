@@ -34,3 +34,9 @@ npm run dev
 ```
 
 Do not infer Story Maker ownership from where an Apps Script deployment copy happens to live.
+
+## Public repository boundary
+
+This repository is public product/tooling source. Keep private personal, business, health, client, credential, and account-specific operational context out of durable Git content here.
+
+A fresh AI session should use this repository only for Allstory map/platform and Story Maker work. Cross-domain personal or business context belongs in its own canonical repository and should be retrieved only when materially necessary.
