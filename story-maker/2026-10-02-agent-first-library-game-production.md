@@ -228,3 +228,81 @@ Compiler는 Agent를 대체하기보다:
 하위 도구가 된다.
 
 현재 우선순위는 **Library Game Builder가 실제 작은 게임 하나를 end-to-end로 만들어 플레이 가능하게 하는 것**이다.
+
+
+## 12. 선행 proof — 하람동 사진관
+
+이 방향은 순수한 미래 가설이 아니다.
+
+2026-09-03에 Vercel의 `Allstory's projects` 팀 아래 **`haramdong-photo-studio`** 프로젝트가 실제 production으로 배포되었다.
+
+확인된 배포 기록:
+
+- project: `haramdong-photo-studio`
+- Vercel project id: `prj_HEAVc19di617tjIxXkqY9CMKMloH`
+- 2026-09-03 19:38 EDT production deployment
+- 2026-09-03 19:39 EDT production deployment
+- 2026-09-03 19:49 EDT production deployment
+- latest checked deployment state: `READY`
+- deployment source: `cli`
+- Git-connected source metadata는 확인되지 않았고, CLI로 직접 배포된 독립 Vercel project였다.
+
+Creator recollection에 따르면 **「하람동 사진관」은 AI를 이용해 실제 플레이 가능한 게임 결과물까지 자동 생성해 본 첫 사례**였다.
+
+당시 결과는 완성품이 아니었다.
+
+- 수정할 부분이 많았고
+- 맵/연출/대사/세부 동선 등에서 사람 손질이 필요했으며
+- 현재의 Story Maker v10, Creator Intent Audit, Conversation/experience 설계, 반복 테스트 같은 기반도 아직 없었다.
+
+그럼에도 중요한 것은 **AI가 아이디어나 문서만 만든 것이 아니라 실제로 플레이 가능한 게임을 만들어냈고, 그것이 웹에 production 배포까지 되었다는 사실**이다.
+
+따라서 하람동 사진관은 현재의 Library Game Builder 방향에서 다음과 같이 본다.
+
+> **Prototype 0 / First Playable Proof**
+
+즉 현재 목표는 "AI가 게임을 만들 수 있는가?"를 처음 증명하는 것이 아니다.
+
+이미 한 번 작동한 흐름을:
+
+```text
+AI가 실제 게임 생성
+→ 플레이
+→ 사람이 부족한 부분 발견
+→ 수정
+→ 다시 플레이
+```
+
+에서
+
+```text
+사람의 이야기
+→ Story Maker가 인간 경험과 의도를 구조화
+→ Library Game Builder가 실제 RPG Maker 프로젝트 생성/수정
+→ 자동 구조 검증 + smoke/browser test
+→ Creator Intent Audit
+→ 사람의 정서적/윤리적 최종 검수
+→ preview / publication
+```
+
+으로 체계화하고 반복 가능하게 만드는 것이다.
+
+### 이 prototype에서 얻는 설계 원칙
+
+하람동 사진관의 가장 중요한 교훈은 **초기 자동 생성물에 수정이 필요했다는 사실 자체가 실패가 아니라 specification source라는 것**이다.
+
+앞으로 기존 결과물을 회수할 수 있다면 다음을 역분석한다.
+
+- AI가 처음부터 잘 만든 부분
+- 사람이 반복적으로 고친 부분
+- 맵 크기와 동선 문제
+- 대사 길이와 자연스러움
+- 이벤트 연결 오류
+- 필요한 연출과 불필요한 연출
+- 재사용 가능한 공통 자산
+- 자동 테스트로 잡을 수 있었던 문제
+- 사람만 판단하기 좋은 감정적/심리적 문제
+
+이 데이터를 Library Game Base, Story Maker validation, smoke test, agent instructions의 실제 설계 근거로 사용한다.
+
+따라서 **하람동 사진관 → 너울 속 아이의 AI 직접 수정 경험 → Story Maker v10 → Library Game Builder**는 서로 별개의 프로젝트가 아니라, 자동 게임 제작 방식이 실제 경험을 통해 점진적으로 성숙해온 하나의 계보로 기록한다.
