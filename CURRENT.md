@@ -1,6 +1,6 @@
 # CURRENT
 
-Updated: 2026-09-26
+Updated: 2026-10-02
 
 ## Role
 Allstory map/platform and canonical Story Maker ownership.
@@ -17,5 +17,17 @@ A larger base Story Maker pipeline currently remains in `mindslash79/rpg-charact
 
 Do not delete or independently diverge the deployment copy until the full active source/deployment chain is reconciled and verified.
 
+## Library game production direction
+
+For Story Library's small psychological games, Story Maker is now treated as the **creative-director / structured narrative layer**. Initial end-to-end production should be agent-first: an AI Game Agent directly creates or edits a small RPG Maker project from Story Maker output and verifies the playable result.
+
+Do not build a universal game compiler first. Use:
+
+```text
+Agent first → make real games → observe repetition → extract deterministic helpers/templates
+```
+
+Reference: `story-maker/2026-10-02-agent-first-library-game-production.md`.
+
 ## Next
-Treat Story Maker direction here. Separate deployment coupling only when doing so has a concrete operational benefit and can be verified safely.
+Treat Story Maker direction here. Prove one end-to-end Library Game Builder flow from Story Maker output to a small playable RPG Maker preview, while preserving the current deployment boundary. Separate deployment coupling only when doing so has a concrete operational benefit and can be verified safely.
