@@ -39,3 +39,15 @@ The portfolio boundary is now clear even though deployment consolidation is not 
 - Temporary deployment coupling may remain until safely removed.
 
 See `CURRENT.md` at repository root.
+
+
+## Library game production direction
+
+For Story Library's short psychological/playable stories, the current direction is **agent-first production rather than building a universal compiler first**.
+
+Story Maker acts as the Creative Director / structured production brief. A Library Game Builder should read that output, copy/read a small RPG Maker base project, directly edit the required RPG Maker JSON/JavaScript/assets, run tests and browser verification, repair failures, and produce a playable preview.
+
+Only patterns that repeat across real games should later be extracted into deterministic helpers/templates/compiler-like tooling.
+
+See:
+- `2026-10-02-agent-first-library-game-production.md`
