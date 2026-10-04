@@ -116,3 +116,23 @@ Conversation 3:
 - important user message_ids: `bbb213cd-13b6-4ee0-b414-adbef6e192bf`, `bbb21029-6c38-4746-99ca-0b4af0e63bea`
 
 Review boundary: selected current-node parent-chain user/assistant string text only. Alternate branches and attachment contents were not reviewed.
+
+## March 27 audience-mind refinement
+
+Heesoo described the audience member's mind as the actual canvas. The creator should understand who the audience may be and create conditions in which an experience can arise, rather than dictating a single required emotion.
+
+He connected this to mature audiences carrying both new desires and old, memorable emotions. The product implication is a restrained experience-design principle:
+
+```text
+understand the audience context
+→ create conditions for encounter
+→ leave interpretive space
+→ let meaning arise in the person
+```
+
+This is historical product philosophy, not evidence of a validated audience model, market segment or implemented feature. The assistant's market and psychological generalizations are excluded.
+
+Additional provenance:
+- source file: `conversations-014.json`
+- source index 60, conversation `69c74a63-a5e0-8325-a3c2-ca493fd3039d`, title `고객의 마음 상태`, user messages `bbb21b9e-19d1-47d6-a187-c29dad394838`, `bbb21ac3-5cd0-4f3a-9e24-c31704519e41`
+- source index 61, conversation `69c74d96-c28c-8328-ba74-ee972ec9ba8e`, title `경험 설계의 중요성`, user messages `bbb21a4c-b87e-49ca-bf74-ff4e625053b6`, `bbb21f6a-7335-4cca-9a44-34e05469af10`
