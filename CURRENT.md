@@ -29,5 +29,9 @@ Agent first → make real games → observe repetition → extract deterministic
 
 Reference: `story-maker/2026-10-02-agent-first-library-game-production.md`.
 
+## Historical product evidence
+
+- `docs/history/2026-03-private-life-map-voice-capture-concept.md` preserves the March 2026 private voice/text life-map and personal-trip concept. It is source history, not current implementation status; private user data remains outside this public repository.
+
 ## Next
 Treat Story Maker direction here. Prove one end-to-end Library Game Builder flow from Story Maker output to a small playable RPG Maker preview, while preserving the current deployment boundary. Separate deployment coupling only when doing so has a concrete operational benefit and can be verified safely.
