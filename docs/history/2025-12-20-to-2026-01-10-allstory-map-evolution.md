@@ -118,6 +118,47 @@ The user reported:
 
 These are self-reports only. They do not verify repository commits, deployment, security, or current behavior.
 
+## December 24–27 implementation sequence
+
+A follow-on conversation documented the user's step-by-step local implementation work. These are historical self-reports, not current implementation truth.
+
+The user reported that:
+
+- a Next.js project was created and run locally;
+- a Supabase project was created in the U.S. East region;
+- project environment variables and a Supabase client were added;
+- Google OAuth was configured and a login completed successfully;
+- the authenticated user appeared in Supabase Auth;
+- SQL for `pins`, `felt_events`, and `copy_events`, related count triggers, and row-level-security policies was executed;
+- the local app structure was consolidated around `src/app` after duplicate root and `src` application directories caused routing and import confusion.
+
+The conversation also recorded several troubleshooting steps: an accidentally created parent-directory npm workspace interfered with Next.js root detection; missing root routes, layout markup, and `globals.css` caused 404 or build errors; and OAuth initially failed because of a redirect URI mismatch.
+
+By the end of the selected path, the user's reported state was: local Next.js running, login page visible, Google login successful, a Supabase user created, database tables/triggers/RLS applied, and product implementation still before the main map, pin CRUD, storage, resonance/copy, and feedback features. The historical assistant estimated progress percentages several times; those estimates are not treated as evidence.
+
+A Google OAuth client secret and a public Supabase key appeared in the historical conversation. Credential values are intentionally not retained here. The assistant advised secret rotation repeatedly, but the reviewed path did not confirm whether rotation occurred. No current credential state should be inferred from this history.
+
+### Additional provenance
+
+- Source file: `conversations-011.json`
+- Source index: 52
+- Conversation ID: `694c60bb-c458-832c-bb3c-ef1d5c28bc57`
+- Title: `AllStory Map 2: MVP 1. Next Supa 30%`
+- Key user message IDs:
+  - `c27b069a-aba8-4724-b5f0-ae99289c9da3`
+  - `7600879b-f390-437c-98ce-e690eba3ae22`
+  - `ddcb22ff-2c42-4bc6-b050-e8ed55fdd181`
+  - `91458056-0813-4cf6-a479-65e71dfb0427`
+  - `ab080cdd-733b-410f-8064-24819195e3af`
+  - `6b5523b5-2480-4d88-ad30-f131b3c155bd`
+  - `0049cdad-0c02-48f3-99e6-ee0d15857bd8`
+  - `68331713-5a72-4100-b5c6-bad0bf644dec`
+  - `98c5abec-04c2-4ff8-9b15-a3abc824c19a`
+  - `063b4e96-977f-4d88-ab5f-94f610604d5c`
+  - `cddb0325-c0e8-4b74-9902-583e4331b3b5`
+- Review method: selected `current_node` parent-chain user/assistant text
+- Not reviewed: alternate branches, attachments/screenshots, external pages, live Supabase state, or local source files
+
 ## Relationship to current direction
 
 Current repository state owns Allstory map/platform and Story Maker implementation. Use this evidence as lineage, not as an instruction to replace present `CURRENT.md`.
