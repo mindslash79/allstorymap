@@ -249,6 +249,52 @@ On 2026-01-03 the user reported that the time/edit/delete work and search-relate
 - Not reviewed: alternate branches, attachment or screenshot contents as primary files, live Supabase state, live local source files, or current deployment
 
 
+
+## Post-January-10 addendum: memoir, LivingFlow, and equal existence
+
+A January 2 conversation added one concise extension: the user saw a printed autobiography or memoir as a natural service derived from accumulated AllStory records. This was a user idea only; the assistant's proposed service levels, pricing assumptions, target segments, and production model were not accepted as product facts.
+
+From January 5 through 17, the user consolidated and extended the concept further. The important user-authored lineage was:
+
+- **Story-first capture:** people should be able to write continuously without first choosing pins. After saving, the system may propose time/place/scene splits, while the writer retains authority to merge, divide, or edit them.
+- **Thread continuity:** pins produced from one narrative should remain visibly connected, so a story is not fragmented by spatial indexing.
+- **Life drawing and LivingFlow:** a person's time-ordered pins could form a symbolic drawing. The user imagined time as a possible third axis, then preferred a less literal, fog-like moving flow over exact routes.
+- **Collective memory as art:** anonymized individual flows could overlap around a theme or era and become a field-like artwork rather than a leaderboard or profile spectacle.
+- **Theme and listening layers:** themes could gather memories at risk of disappearing. A quiet lullaby/listening mode could read selected stories without engagement-maximizing or highly activating content.
+- **Installation horizon:** the user imagined a large three-dimensional or holographic LivingFlow installation in which the flow associated with a narrated story quietly brightens. This is a long-horizon artistic direction, not a current implementation commitment.
+- **Creative aim:** the user did not primarily want maximal mass appeal. He wanted a work that could remain deeply and constructively present in a smaller number of people's lives.
+- **Equal-existence rule:** even a famous participant should remain structurally equal to every other participant—one person, one existence, one star. The platform should not turn celebrity participation into a special section, ranking, badge, or consumption loop.
+
+The user's own origin account connected LivingFlow to the emotional impression left by fictional collective-memory worlds such as Final Fantasy VII's Lifestream and Avatar's Eywa. His stated question was whether traces of lives could be connected **while people are living**, rather than only imagined as a posthumous realm. This records personal inspiration, not a legal conclusion, marketing recommendation, or claim of independent copyright clearance. The historical assistant's copyright assurances are explicitly not treated as authoritative.
+
+The durable design test emerging from this period is:
+
+> Does a feature make an already-famous person more famous, or does it allow that person to remain simply one human existence among others?
+
+### Additional provenance
+
+- Source file: `conversations-011.json`
+- Source index 63:
+  - Conversation ID: `6957bcba-81a0-832c-bba0-d6e19ab0e0d6`
+  - Title: `AllStory Map 자서전 서비스`
+  - Key user message ID: `bbb21749-4faa-44a3-bb86-9c2d4fed0ec6`
+- Source index 65:
+  - Conversation ID: `695bcbb8-1d08-8326-8e30-09be4c90272c`
+  - Title: `AllStory 개념 정리 1.5`
+  - Key user message IDs:
+    - story-first writing and suggested pin splitting: `bbb212f5-3e37-4dd8-b80c-0622bc37953f`
+    - time as a third axis: `bbb21629-d52a-4898-87d1-85c267117de8`
+    - fog-like collective flow: `bbb2114a-547c-4ec7-a446-b64f3869a8f5`
+    - inspiration and living traces: `bbb2137f-5054-4356-968b-b10f12e2df7d`
+    - integrated concept request: `bbb21f8c-db6e-436c-9655-03c6079d1485`
+    - holographic installation idea: `bbb216b7-8fd1-4ead-bb38-08273fe2d964`
+    - long-lasting rather than universal appeal: `bbb218bf-29ec-4066-ad99-fcc5b4c6609d`
+    - celebrity participation idea and caution: `bbb21889-1cd6-4a63-bf7a-67c437f5718c`, `bbb21e4f-b2d1-4cdf-822f-c6914ace0065`
+    - equal-existence declaration: `bbb219ab-5972-4409-86e1-1d61596ced41`
+- Review method: selected `current_node` parent-chain user/assistant text
+- Not reviewed: alternate branches, attachments, generated images, external pages, live implementation, or current legal/IP status
+
+
 ## Relationship to current direction
 
 Current repository state owns Allstory map/platform and Story Maker implementation. Use this evidence as lineage, not as an instruction to replace present `CURRENT.md`.
