@@ -196,6 +196,59 @@ The durable engineering lesson in this history is the user's own request to stop
 - Review method: selected `current_node` parent-chain user/assistant text
 - Not reviewed: alternate branches, attachments/screenshots, panic-log attachment contents as primary files, external pages, live Supabase state, or local source files
 
+
+## January 1–12 persistence, search, and Place design
+
+A further selected-path conversation records the point at which the local map prototype crossed the previously unverified persistence boundary. These remain dated user self-reports, not verification of the present repository, Supabase schema, deployment, or security posture.
+
+On 2026-01-01 the user reported that:
+
+- a duplicate `default export` in `src/app/map/page.tsx` was corrected and the intended page/component path was confirmed;
+- the map and create flow became visible again;
+- database/application mismatches surfaced through missing-column and enum errors, including `note`, `user_id`, and the invalid visibility value `public`;
+- the actual visibility values reported by the user were `public_with_author`, `public_anonymous`, and `private`;
+- after aligning the working flow around the database-facing fields, pin creation and Supabase persistence worked;
+- the right-hand white panel displayed accumulated pins with time and story text.
+
+The historical exchange repeatedly alternated between `user_id`/`owner_id` and `note`/`body`. Because attached schema exports were not reviewed as primary files and assistant replacement code was inconsistent, those column names are **not** promoted here as current schema truth. The durable lesson is to compare the application payload, live table columns/types/defaults, enum labels, and RLS policies before changing either side.
+
+On 2026-01-02 the user reported that logout redirected to the login screen and blocked map access, and that Google Places search worked. The user also asked that programming answers address only the current question because repeated prior material caused confusion and increased loading time.
+
+The same conversation then fixed the next product direction:
+
+- time should be a start/end range, with the end initially copied from the start but editable;
+- precision should be explicit from year through second, with unspecified lower units filled by a deterministic minimum for ordering;
+- display text may later be generated, while structured time remains the stable source for sorting and filtering;
+- owners should be able to edit and delete their pins, and each pin should visibly expose its stable identifier;
+- search movement should use both exact `geometry.location` and `geometry.viewport` when available;
+- a first-class Place object should contain multiple pins and have a name, time range, and a `Current` end option;
+- Place visibility should use the same three meanings: private, public without author identity, and public with author identity;
+- if a Place is private, its child pins should not become publicly visible; a public Place may still contain private pins.
+
+On 2026-01-03 the user reported that the time/edit/delete work and search-related fixes were functioning after a TypeScript callback correction. A full Place SQL/RLS/type/component plan was then generated for later execution, but the selected path contains no user confirmation that Place was applied successfully. On 2026-01-12 the next user message only asked how to restart the local dev server. Place therefore remains a historical planned next step in this evidence, not a completed feature.
+
+### Additional provenance
+
+- Source file: `conversations-011.json`
+- Source index: 62
+- Conversation ID: `6956eb31-755c-8333-835d-64f8113e0099`
+- Title: `AllStory Map 4: MVP 3. Pin에 데이터 붙이기`
+- Key user message IDs:
+  - runtime-path and duplicate-export resolution: `e0e395cdb-e821-4540-bc18-511a3dac2871`
+  - schema comparison request: `4f4fc05f-c319-41cb-9d6d-2809a3c67d64`, `e436bc03-c4f3-4097-96a9-b3b63f661ef2`
+  - authenticated-only public visibility requirement: `a6585834-cbb2-4801-a14d-40fe00ecafec`
+  - actual visibility enum labels: `47b10c39-6829-47a2-b1df-261abd79138a`
+  - save/persistence confirmation: `6571dfc2-e74a-4468-8685-273d57e56691`, `eb20264d-3f1e-4b16-88e0-59f57424d44f`
+  - logout and map-access requirement: `a50f2731-b8e1-4e74-a5cb-4701a679fe6e`
+  - search working: `aea22a00-1393-4ab5-b9ae-d925c37648c7`
+  - time, edit/delete, search, and Place requirements: `c8746269-db10-4452-a749-2246422b34c1`, `b59968e8-888f-4d20-bc3b-6fa172387433`
+  - post-fix working confirmation: `d26de997-6e7e-4a7c-ad09-a7b2a9963fb2`, `1a72ace6-7b8c-4c3c-aa32-a369915a7bba`
+  - request for the Place implementation handoff: `a4abb82a-5860-423d-8713-6210fc7027c4`
+  - later dev-server restart request: `6199ca70-9a36-411c-9e26-a659555bd1c6`
+- Review method: selected `current_node` parent-chain user/assistant text
+- Not reviewed: alternate branches, attachment or screenshot contents as primary files, live Supabase state, live local source files, or current deployment
+
+
 ## Relationship to current direction
 
 Current repository state owns Allstory map/platform and Story Maker implementation. Use this evidence as lineage, not as an instruction to replace present `CURRENT.md`.
