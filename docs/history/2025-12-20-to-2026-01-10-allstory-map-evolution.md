@@ -159,6 +159,43 @@ A Google OAuth client secret and a public Supabase key appeared in the historica
 - Review method: selected `current_node` parent-chain user/assistant text
 - Not reviewed: alternate branches, attachments/screenshots, external pages, live Supabase state, or local source files
 
+
+## December 27–January 1 map implementation and recovery sequence
+
+The next selected-path conversation records a concrete but unstable local implementation sequence. These are user-reported historical milestones, not verification of current repository behavior.
+
+The user reported that:
+
+- the OAuth callback/page conflict was resolved and the protected `/map` route worked after login;
+- on 2025-12-29 the actual Google map rendered, then clicking the map produced a single temporary marker that moved to the latest click;
+- he created `src/types/pin.ts` and `src/components/PinCreateModal.tsx`, and attempted to extend `GoogleMap.tsx` toward Supabase create/read plus a pin-list panel;
+- development then became blocked by repeated Next.js/Turbopack failures on Windows, including a panic log reporting access denial while reading generated `.next` chunks and a later Node out-of-memory crash;
+- he copied the project from the Desktop path to `C:\\Dev\\allstorymap\\allstory-mvp`, rebooted, and on 2026-01-01 eventually regained a rendered map and click-to-marker behavior;
+- at the end of the selected path, actual Supabase pin insertion, reload persistence, and pin-list synchronization were still explicitly unconfirmed.
+
+The durable engineering lesson in this history is the user's own request to stop repeating broad replacement instructions and return to the last known working slice. The closing handoff placed the next verification boundary at: database insert, reload/read, marker rendering from persisted rows, then list/map selection synchronization. Historical assistant code, version advice, causal diagnoses of the toolchain failures, and progress percentages are not treated as repository facts.
+
+### Additional provenance
+
+- Source file: `conversations-011.json`
+- Source index: 54
+- Conversation ID: `695026dd-4370-832d-9a8c-3c412f33c1c2`
+- Title: `AllStory Map 3: MVP 2. Map 더하기`
+- Key user message IDs:
+  - authenticated map route working: `5123d16e-7d61-4a6f-9bbe-a008e02a0dbb`
+  - first map render: `82e6c0b0-f94c-4e3d-adff-55f5fa96353c`
+  - click-to-marker working: `b7f7d608-f63c-45e5-ac24-fd4f45bb7e06`
+  - one moving temporary marker and no repetition: `efb0a938-4a96-4871-b900-4b0a27b7d960`
+  - request to proceed to create/read: `335a72b6-fe3e-4e64-a935-93278601927d`
+  - first full integration attempt: `6f0d61dc-61fe-4716-92c3-d8bc1aef7b5f`
+  - user flags repeated loop: `ea33d0e8-8e28-4a72-a951-494670994c9c`
+  - Windows-path move: `c38287f2-0cd0-4eb3-b410-85655baa2d01`
+  - Node memory error: `9c5a32f7-247c-49ed-8df9-e3ee19b60c0a`
+  - map restored: `0723b614-a296-4a12-a5e2-a850a826a2ea`
+  - final handoff request: `2c00d51c-1e19-40ef-a6b8-b883270f69e1`
+- Review method: selected `current_node` parent-chain user/assistant text
+- Not reviewed: alternate branches, attachments/screenshots, panic-log attachment contents as primary files, external pages, live Supabase state, or local source files
+
 ## Relationship to current direction
 
 Current repository state owns Allstory map/platform and Story Maker implementation. Use this evidence as lineage, not as an instruction to replace present `CURRENT.md`.
