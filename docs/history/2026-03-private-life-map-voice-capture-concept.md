@@ -136,3 +136,25 @@ Additional provenance:
 - source file: `conversations-014.json`
 - source index 60, conversation `69c74a63-a5e0-8325-a3c2-ca493fd3039d`, title `고객의 마음 상태`, user messages `bbb21b9e-19d1-47d6-a187-c29dad394838`, `bbb21ac3-5cd0-4f3a-9e24-c31704519e41`
 - source index 61, conversation `69c74d96-c28c-8328-ba74-ee972ec9ba8e`, title `경험 설계의 중요성`, user messages `bbb21a4c-b87e-49ca-bf74-ff4e625053b6`, `bbb21f6a-7335-4cca-9a44-34e05469af10`
+
+
+## April–May 2026 origin and implementation evidence
+
+A later source conversation clarified the product origin without changing the privacy boundary above. Heesoo said he began AllStory Map for himself and after hearing an older neighbour's Toronto stories. The public-safe product insight is that place- and time-bound memories can keep a person's stories from disappearing and can help later generations understand what the person experienced, valued and felt. At that point he reported that the product could show a Google Map and record pins. This is historical self-report, not verification of the repository's current feature set.
+
+A separate April 2026 troubleshooting conversation preserves a narrow user-confirmed implementation result:
+
+- Heesoo wanted the map to remain full width while a My Pins drawer opened over it from the right;
+- after several unsuccessful iterations, he confirmed success after changing the drawer's opening `<aside>` so it was fixed and right-anchored;
+- immediately afterward he reported that the map search field was missing;
+- the selected path ended after the assistant proposed restoring the search as a fixed overlay, so that restoration is **not user-confirmed**.
+
+The failed intermediate diagnoses and assistant-generated replacement code are not promoted as current repository facts. Only the user's explicit success report for the right-side drawer is retained as implementation evidence.
+
+Additional provenance:
+
+- source file: `conversations-016.json`
+- source index 0, conversation `69e98300-8590-83ea-84a1-92039e2ec9db`, title `Git을 이용한 업데이트 방법`, selected-path messages 0–41; important user messages `b66d7ec3-99cc-4a11-97ad-2ca21fa11c57`, `1981565a-ae1f-43dd-aa6f-441e07813b42`, `30e3d985-5c34-4e3f-a312-8af2e2f508cb`, `a166c695-3949-4eb0-aed8-476c502a745f`
+- source index 83, conversation `69f80a5f-bfd8-83ea-8e2d-30a59b03885d`, title `AllStory Map 아이디어`, selected-path messages 0–1; important user message `bbb21e32-3b54-46b1-95d2-30061824207e`
+
+Review boundary: selected current-node parent-chain user/assistant string text only. Alternate branches and attachment contents remain pending. The neighbour's identity, exact locations and private memories are intentionally omitted from this public repository.
