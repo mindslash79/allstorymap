@@ -21,6 +21,8 @@ Do not delete or independently diverge the deployment copy until the full active
 
 For Story Library's small psychological games, Story Maker is now treated as the **creative-director / structured narrative layer**. Initial end-to-end production should be agent-first: an AI Game Agent directly creates or edits a small RPG Maker project from Story Maker output and verifies the playable result.
 
+2026-10-10 asset-light refinement: start with **minimum viable character sprites** and **existing licensed RPG Maker base maps/tilesets modified for the scene** instead of letting custom art block a first playable preview. This is a future production policy, not evidence that new assets or games were built. Full note: `story-maker/2026-10-02-agent-first-library-game-production.md` §13.
+
 Do not build a universal game compiler first. Use:
 
 ```text
